@@ -605,6 +605,7 @@ useHead({
 <style>
 :root {
   --gap: 16px;
+  --font-mono: Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   --radius: clamp(10px, 1.5vw, 30px);
   --header-h: 88px;
   --page-pad: 24px;
@@ -800,7 +801,7 @@ body {
   color: var(--toggle-btn);
   font-size: 13px;
   font-weight: 400;
-  font-family: monospace;
+  font-family: var(--font-mono);
   text-transform: capitalize;
   letter-spacing: 0.01em;
   padding: 9px 22px;
@@ -834,7 +835,7 @@ body {
   color: var(--toggle-btn-active-text);
   font-size: 13px;
   font-weight: 400;
-  font-family: monospace;
+  font-family: var(--font-mono);
   text-transform: capitalize;
   letter-spacing: 0.01em;
 }
@@ -880,7 +881,7 @@ body {
   color: var(--toggle-btn);
   font-size: 13px;
   font-weight: 400;
-  font-family: monospace;
+  font-family: var(--font-mono);
   text-transform: capitalize;
   letter-spacing: 0.01em;
   padding: 9px 18px;
@@ -918,7 +919,7 @@ body {
 
 .info-panel__body {
   padding-bottom: 30px;
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -1021,8 +1022,7 @@ body {
   border-radius: 999px;
   background: var(--caption-bg);
   color: var(--caption-text);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.2;
@@ -1041,8 +1041,7 @@ body {
   border-radius: 999px;
   background: var(--caption-bg);
   color: var(--caption-text);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.2;
