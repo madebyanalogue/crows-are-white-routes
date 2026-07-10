@@ -605,7 +605,7 @@ useHead({
 <style>
 :root {
   --gap: 16px;
-  --radius: 28px;
+  --radius: clamp(10px, 1.5vw, 30px);
   --header-h: 88px;
   --page-pad: 24px;
   --cols: 3;
