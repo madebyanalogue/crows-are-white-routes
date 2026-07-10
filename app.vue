@@ -170,7 +170,15 @@ function tileWrapStyle(item: TabMediaItem) {
     const aspectRatio = fullWidthAspectRatio(item)
     return aspectRatio ? { aspectRatio } : undefined
   }
-  return { '--w': item.width, '--h': item.height }
+
+  const style: Record<string, string | number> = {
+    '--w': item.width,
+    '--h': item.height,
+  }
+  const aspectRatio = fullWidthAspectRatio(item)
+  if (aspectRatio) style['--media-aspect'] = aspectRatio
+
+  return style
 }
 
 function onFullWidthMediaMeta(
@@ -495,8 +503,7 @@ useHead({
                 playsinline
                 preload="auto"
                 @loadedmetadata="
-                  item.fullWidth &&
-                    onFullWidthMediaMeta($event.target as HTMLVideoElement, item.id)
+                  onFullWidthMediaMeta($event.target as HTMLVideoElement, item.id)
                 "
               />
               <div v-else class="tile__media">
@@ -506,8 +513,7 @@ useHead({
                   loading="lazy"
                   alt=""
                   @load="
-                    item.fullWidth &&
-                      onFullWidthMediaMeta($event.target as HTMLImageElement, item.id)
+                    onFullWidthMediaMeta($event.target as HTMLImageElement, item.id)
                   "
                 />
                 <img
@@ -1188,11 +1194,18 @@ body {
   .tile-wrap:not(.tile-wrap--full) {
     grid-column: span 1 !important;
     grid-row: span 1 !important;
-    height: var(--unit) !important;
+    height: auto !important;
+    aspect-ratio: var(--media-aspect, auto);
   }
 
-  .tile-wrap:not(.tile-wrap--full) .tile {
-    height: 100%;
+  .tile-wrap:not(.tile-wrap--full) .tile,
+  .tile-wrap:not(.tile-wrap--full) .tile__media {
+    height: auto;
+  }
+
+  .tile-wrap:not(.tile-wrap--full) .media {
+    height: auto;
+    object-fit: contain;
   }
 }
 </style>
