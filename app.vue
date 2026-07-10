@@ -82,7 +82,7 @@ const theme = useCookie<Theme>(THEME_KEY, {
 })
 
 const infoOpenCookie = useCookie<'0' | '1'>(INFO_OPEN_KEY, {
-  default: () => '0',
+  default: () => '1',
 })
 
 const infoOpen = ref(infoOpenCookie.value === '1')
@@ -103,6 +103,39 @@ const hasInfoContent = computed(
 function toggleInfo() {
   infoOpen.value = !infoOpen.value
 }
+
+const tabDropdownOpen = ref(false)
+
+function selectTab(slug: string) {
+  active.value = slug
+  tabDropdownOpen.value = false
+}
+
+function toggleTabDropdown() {
+  tabDropdownOpen.value = !tabDropdownOpen.value
+}
+
+watch(active, () => {
+  tabDropdownOpen.value = false
+})
+
+onMounted(() => {
+  if (typeof window === 'undefined') return
+  document.addEventListener('pointerdown', onTabDropdownPointerDown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('pointerdown', onTabDropdownPointerDown)
+})
+
+function onTabDropdownPointerDown(event: PointerEvent) {
+  const target = event.target
+  if (!(target instanceof Node)) return
+  if (!document.querySelector('.tab-dropdown')?.contains(target)) {
+    tabDropdownOpen.value = false
+  }
+}
+
 const selectedGridCols = ref<GridCols>(3)
 const lightboxVisible = ref(false)
 const lightboxSourceRect = ref<DOMRect | null>(null)
@@ -259,7 +292,7 @@ useHead({
           </svg>
         </button>
 
-        <nav v-if="tabList.length" class="toggle">
+        <nav v-if="tabList.length" class="toggle toggle--desktop">
           <button
             v-for="tab in tabList"
             :key="tab.slug"
@@ -270,6 +303,49 @@ useHead({
             {{ tab.title }}
           </button>
         </nav>
+
+        <div v-if="tabList.length" class="tab-dropdown">
+          <button
+            type="button"
+            class="tab-dropdown__trigger"
+            :aria-expanded="tabDropdownOpen"
+            aria-haspopup="listbox"
+            @click.stop="toggleTabDropdown"
+          >
+            <span class="tab-dropdown__label">{{ currentTab?.title ?? 'Select tab' }}</span>
+            <svg
+              class="tab-dropdown__chevron"
+              :class="{ 'tab-dropdown__chevron--open': tabDropdownOpen }"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              aria-hidden="true"
+            >
+              <path d="M3 4.5 6 7.5 9 4.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </button>
+          <div
+            v-show="tabDropdownOpen"
+            class="tab-dropdown__menu"
+            role="listbox"
+            :aria-activedescendant="active ? `tab-option-${active}` : undefined"
+          >
+            <button
+              v-for="tab in tabList"
+              :id="`tab-option-${tab.slug}`"
+              :key="tab.slug"
+              type="button"
+              class="tab-dropdown__option"
+              :class="{ 'tab-dropdown__option--active': active === tab.slug }"
+              role="option"
+              :aria-selected="active === tab.slug"
+              @click="selectTab(tab.slug)"
+            >
+              {{ tab.title }}
+            </button>
+          </div>
+        </div>
 
         <div class="header-controls">
           <div v-if="currentTab" class="grid-toggle" role="group" aria-label="Grid size">
@@ -736,6 +812,86 @@ body {
   color: var(--toggle-btn-active-text);
 }
 
+.tab-dropdown {
+  display: none;
+  position: relative;
+  pointer-events: auto;
+}
+
+.tab-dropdown__trigger {
+  appearance: none;
+  border: 1px solid var(--toggle-border);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px 9px 18px;
+  border-radius: 999px;
+  background: var(--toggle-btn-active-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--toggle-shadow);
+  color: var(--toggle-btn-active-text);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: monospace;
+  text-transform: capitalize;
+  letter-spacing: 0.01em;
+}
+
+.tab-dropdown__label {
+  line-height: 1;
+}
+
+.tab-dropdown__chevron {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.2s ease;
+}
+
+.tab-dropdown__chevron--open {
+  transform: rotate(180deg);
+}
+
+.tab-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: calc(100% + 24px);
+  padding: 5px;
+  border-radius: 16px;
+  background: var(--toggle-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--toggle-border);
+  box-shadow: var(--toggle-shadow);
+  z-index: 2;
+}
+
+.tab-dropdown__option {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: var(--toggle-btn);
+  font-size: 13px;
+  font-weight: 400;
+  font-family: monospace;
+  text-transform: capitalize;
+  letter-spacing: 0.01em;
+  padding: 9px 18px;
+  border-radius: 999px;
+}
+
+.tab-dropdown__option--active {
+  background: var(--toggle-btn-active-bg);
+  color: var(--toggle-btn-active-text);
+}
+
 .page {
   padding: calc(var(--header-h) + 12px) var(--page-pad) 48px;
 }
@@ -757,7 +913,7 @@ body {
 .info-panel__content {
   min-height: 0;
   overflow: hidden;
-  max-width: 400px;
+  max-width: 420px;
 }
 
 .info-panel__body {
@@ -1003,6 +1159,20 @@ body {
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+@media (max-width: 750px) {
+  .toggle--desktop {
+    display: none;
+  }
+
+  .tab-dropdown {
+    display: block;
+  }
+
+  .grid-toggle {
+    display: none;
+  }
 }
 
 @media (max-width: 900px) {
