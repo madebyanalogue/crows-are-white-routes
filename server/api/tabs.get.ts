@@ -28,6 +28,7 @@ export type TabMediaItem = {
   href?: string
   caption?: string
   fullWidth: boolean
+  halfWidth: boolean
   mediaWidth?: number
   mediaHeight?: number
   width: number
@@ -93,7 +94,9 @@ export default defineEventHandler(async () => {
         items: (tab.items ?? [])
           .filter((item) => item.src && item.mediaType)
           .map((item) => {
-            const fullWidth = Number(item.width) === 0
+            const width = Number(item.width)
+            const fullWidth = width === 0
+            const halfWidth = width === 4
             return {
               id: item._key,
               type: item.mediaType,
@@ -102,10 +105,11 @@ export default defineEventHandler(async () => {
               href: item.link || undefined,
               caption: item.caption || undefined,
               fullWidth,
+              halfWidth,
               mediaWidth: item.mediaWidth || undefined,
               mediaHeight: item.mediaHeight || undefined,
-              width: fullWidth ? 1 : clampSpan(item.width),
-              height: fullWidth ? 1 : clampSpan(item.height),
+              width: fullWidth || halfWidth ? 1 : clampSpan(item.width),
+              height: fullWidth || halfWidth ? 1 : clampSpan(item.height),
             }
           }),
       }))

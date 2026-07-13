@@ -7,6 +7,7 @@ type TabMediaItem = {
   href?: string
   caption?: string
   fullWidth: boolean
+  halfWidth: boolean
   mediaWidth?: number
   mediaHeight?: number
   width: number
@@ -166,9 +167,16 @@ function fullWidthAspectRatio(item: TabMediaItem) {
 }
 
 function tileWrapStyle(item: TabMediaItem) {
-  if (item.fullWidth) {
+  if (item.fullWidth || item.halfWidth) {
     const aspectRatio = fullWidthAspectRatio(item)
-    return aspectRatio ? { aspectRatio } : undefined
+    const style: Record<string, string | number> = {}
+
+    if (aspectRatio) style.aspectRatio = aspectRatio
+    if (item.halfWidth) {
+      style['--half-span'] = Math.max(1, Math.floor(selectedGridCols.value / 2))
+    }
+
+    return Object.keys(style).length ? style : undefined
   }
 
   const style: Record<string, string | number> = {
@@ -470,7 +478,10 @@ useHead({
             v-for="item in items"
             :key="item.id"
             class="tile-wrap"
-            :class="{ 'tile-wrap--full': item.fullWidth }"
+            :class="{
+              'tile-wrap--full': item.fullWidth,
+              'tile-wrap--half': item.halfWidth,
+            }"
             :style="tileWrapStyle(item)"
           >
             <component
@@ -956,7 +967,7 @@ body {
   width: 100%;
 }
 
-.tile-wrap:not(.tile-wrap--full) {
+.tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) {
   grid-column: span var(--w, 1);
   grid-row: span var(--h, 1);
   height: calc(var(--h) * var(--unit) + (var(--h) - 1) * var(--gap));
@@ -970,7 +981,14 @@ body {
   width: 100%;
 }
 
-.tile-wrap:not(.tile-wrap--full) .tile {
+.tile-wrap--half {
+  grid-column: span var(--half-span, 1);
+  align-self: start;
+  width: calc((100cqw - (var(--gap) * (var(--cols) - 1))) / 2);
+  max-width: 100%;
+}
+
+.tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) .tile {
   height: 100%;
 }
 
@@ -1089,24 +1107,28 @@ body {
   opacity: 1;
 }
 
-.tile-wrap--full .tile {
+.tile-wrap--full .tile,
+.tile-wrap--half .tile {
   height: 100%;
   display: block;
 }
 
-.tile-wrap--full .tile__media {
+.tile-wrap--full .tile__media,
+.tile-wrap--half .tile__media {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
-.tile-wrap--full .media {
+.tile-wrap--full .media,
+.tile-wrap--half .media {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
-.tile-wrap--full .media--rollover {
+.tile-wrap--full .media--rollover,
+.tile-wrap--half .media--rollover {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1191,19 +1213,19 @@ body {
     --cols: 1 !important;
   }
 
-  .tile-wrap:not(.tile-wrap--full) {
+  .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) {
     grid-column: span 1 !important;
     grid-row: span 1 !important;
     height: auto !important;
     aspect-ratio: var(--media-aspect, auto);
   }
 
-  .tile-wrap:not(.tile-wrap--full) .tile,
-  .tile-wrap:not(.tile-wrap--full) .tile__media {
+  .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) .tile,
+  .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) .tile__media {
     height: auto;
   }
 
-  .tile-wrap:not(.tile-wrap--full) .media {
+  .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) .media {
     height: auto;
     object-fit: contain;
   }
