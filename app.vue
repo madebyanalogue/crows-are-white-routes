@@ -169,19 +169,13 @@ function fullWidthAspectRatio(item: TabMediaItem) {
 function tileWrapStyle(item: TabMediaItem) {
   if (item.fullWidth || item.halfWidth) {
     const aspectRatio = fullWidthAspectRatio(item)
-    const style: Record<string, string | number> = {}
-
-    if (aspectRatio) style.aspectRatio = aspectRatio
-    if (item.halfWidth) {
-      style['--half-span'] = Math.max(1, Math.floor(selectedGridCols.value / 2))
-    }
-
-    return Object.keys(style).length ? style : undefined
+    return aspectRatio ? { aspectRatio } : undefined
   }
 
+  // Grid uses 2 tracks per square so half-width can span exactly 50%.
   const style: Record<string, string | number> = {
-    '--w': item.width,
-    '--h': item.height,
+    '--w': item.width * 2,
+    '--rows': item.height,
   }
   const aspectRatio = fullWidthAspectRatio(item)
   if (aspectRatio) style['--media-aspect'] = aspectRatio
@@ -958,9 +952,12 @@ body {
 
 .grid {
   container-type: inline-size;
-  --unit: calc((100cqw - (var(--gap) * (var(--cols) - 1))) / var(--cols));
+  /* 2 sub-tracks per visual column so half-width = exact 50%. */
+  --tracks: calc(var(--cols) * 2);
+  --track: calc((100cqw - (var(--gap) * (var(--tracks) - 1))) / var(--tracks));
+  --unit: calc(var(--track) * 2 + var(--gap));
   display: grid;
-  grid-template-columns: repeat(var(--cols), minmax(0, var(--unit)));
+  grid-template-columns: repeat(var(--tracks), minmax(0, var(--track)));
   grid-auto-flow: dense;
   grid-auto-rows: auto;
   gap: var(--gap);
@@ -968,9 +965,8 @@ body {
 }
 
 .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) {
-  grid-column: span var(--w, 1);
-  grid-row: span var(--h, 1);
-  height: calc(var(--h) * var(--unit) + (var(--h) - 1) * var(--gap));
+  grid-column: span var(--w, 2);
+  height: calc(var(--rows, 1) * var(--unit) + (var(--rows, 1) - 1) * var(--gap));
   min-height: 0;
   min-width: 0;
 }
@@ -982,10 +978,9 @@ body {
 }
 
 .tile-wrap--half {
-  grid-column: span var(--half-span, 1);
+  grid-column: span var(--cols);
   align-self: start;
-  width: calc((100cqw - (var(--gap) * (var(--cols) - 1))) / 2);
-  max-width: 100%;
+  width: 100%;
 }
 
 .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) .tile {
@@ -1214,10 +1209,13 @@ body {
   }
 
   .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) {
-    grid-column: span 1 !important;
-    grid-row: span 1 !important;
+    grid-column: span 2 !important;
     height: auto !important;
     aspect-ratio: var(--media-aspect, auto);
+  }
+
+  .tile-wrap--half {
+    grid-column: 1 / -1 !important;
   }
 
   .tile-wrap:not(.tile-wrap--full):not(.tile-wrap--half) .tile,
