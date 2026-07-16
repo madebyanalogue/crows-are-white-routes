@@ -618,6 +618,7 @@ useHead({
   --gap: 16px;
   --font-mono: Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   --radius: clamp(10px, 1.5vw, 30px);
+  --radius: 0px;
   --header-h: 88px;
   --page-pad: 24px;
   --cols: 3;
@@ -680,7 +681,7 @@ body {
 }
 
 .header {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -1143,12 +1144,14 @@ body {
   inset: 0;
   z-index: 200;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.62);
+  align-items: flex-start;
+  justify-content: stretch;
+  padding: 0;
+  background: var(--bg);
   opacity: 0;
   transition: opacity 0.25s ease;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .lightbox--visible {
@@ -1156,15 +1159,17 @@ body {
 }
 
 .lightbox__close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  transform: translateY(-50%);
+  z-index: 1;
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  border: 1px solid var(--theme-toggle-border);
+  background: var(--bg);
+  color: var(--text);
   font-size: 28px;
   font-weight: 300;
   line-height: 1;
@@ -1174,11 +1179,15 @@ body {
   justify-content: center;
 }
 
+.lightbox__content {
+  width: 100%;
+  min-height: 100%;
+}
+
 .lightbox__media {
   display: block;
-  max-width: 95vw;
-  max-height: 95vh;
-  width: auto;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   object-fit: contain;
 }
