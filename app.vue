@@ -1160,9 +1160,8 @@ body {
 
 .lightbox__close {
   position: fixed;
-  bottom: 30px;
+  top: 30px;
   right: 30px;
-  transform: translateY(-50%);
   z-index: 1;
   width: 40px;
   height: 40px;
